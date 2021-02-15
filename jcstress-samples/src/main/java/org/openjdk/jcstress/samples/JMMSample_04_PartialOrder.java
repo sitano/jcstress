@@ -215,6 +215,36 @@ public class JMMSample_04_PartialOrder {
         }
     }
 
+    @JCStressTest
+    @Outcome(id = "0, 0", expect = ACCEPTABLE, desc = "Doing both reads early.")
+    @Outcome(id = "1, 1", expect = ACCEPTABLE, desc = "Doing both reads late.")
+    @Outcome(id = "0, 1", expect = ACCEPTABLE, desc = "Caught in the middle: $x is visible, $y is not.")
+    @Outcome(id = "1, 0", expect = FORBIDDEN, desc = "Seeing $y, but not $x!")
+    @State
+    public static class LockGuard2 {
+
+        int x;
+        int y;
+        int z;
+
+        @Actor
+        public void actor1() {
+            synchronized (this) {
+                x = 1;
+                y = 1;
+            }
+        }
+
+        @Actor
+        public void actor2(II_Result r) {
+            r.r1 = y;
+            synchronized (this) {
+                z = 1;
+            }
+            r.r2 = x;
+        }
+    }
+
     /*
        ----------------------------------------------------------------------------------------------------------
 
